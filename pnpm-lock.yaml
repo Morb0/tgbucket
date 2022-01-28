@@ -16,6 +16,8 @@ specifiers:
   eslint: ^8.0.1
   eslint-config-prettier: ^8.3.0
   eslint-plugin-prettier: ^4.0.0
+  eslint-plugin-simple-import-sort: ^7.0.0
+  eslint-plugin-unused-imports: ^2.0.0
   jest: ^27.2.5
   prettier: ^2.3.2
   reflect-metadata: ^0.1.13
@@ -33,6 +35,8 @@ dependencies:
   '@nestjs/common': 8.2.6_88a789cb3f20cca25c3f70fe96f41643
   '@nestjs/core': 8.2.6_2d4ee36c4446df4873bb38fb1c4583da
   '@nestjs/platform-express': 8.2.6_732a54a2558f64827b8cc4f9baac4f1f
+  eslint-plugin-simple-import-sort: 7.0.0_eslint@8.7.0
+  eslint-plugin-unused-imports: 2.0.0_47dcbfddf9aa6162a24c560c93f1da35
   reflect-metadata: 0.1.13
   rimraf: 3.0.2
   rxjs: 7.5.2
@@ -2263,6 +2267,34 @@ packages:
       prettier: 2.5.1
       prettier-linter-helpers: 1.0.0
     dev: true
+
+  /eslint-plugin-simple-import-sort/7.0.0_eslint@8.7.0:
+    resolution: {integrity: sha512-U3vEDB5zhYPNfxT5TYR7u01dboFZp+HNpnGhkDB2g/2E4wZ/g1Q9Ton8UwCLfRV9yAKyYqDh62oHOamvkFxsvw==}
+    peerDependencies:
+      eslint: '>=5.0.0'
+    dependencies:
+      eslint: 8.7.0
+    dev: false
+
+  /eslint-plugin-unused-imports/2.0.0_47dcbfddf9aa6162a24c560c93f1da35:
+    resolution: {integrity: sha512-3APeS/tQlTrFa167ThtP0Zm0vctjr4M44HMpeg1P4bK6wItarumq0Ma82xorMKdFsWpphQBlRPzw/pxiVELX1A==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      '@typescript-eslint/eslint-plugin': ^5.0.0
+      eslint: ^8.0.0
+    peerDependenciesMeta:
+      '@typescript-eslint/eslint-plugin':
+        optional: true
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.10.1_0f442f6b60390429061d5d9b6bcaaba6
+      eslint: 8.7.0
+      eslint-rule-composer: 0.3.0
+    dev: false
+
+  /eslint-rule-composer/0.3.0:
+    resolution: {integrity: sha512-bt+Sh8CtDmn2OajxvNO+BX7Wn4CIWMpTRm3MaiKPCQcnnlm0CS2mhui6QaoeQugs+3Kj2ESKEEGJUdVafwhiCg==}
+    engines: {node: '>=4.0.0'}
+    dev: false
 
   /eslint-scope/5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
