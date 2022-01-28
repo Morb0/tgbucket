@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { databaseConfig } from './configs/database.config';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { databaseConfig } from './configs/database.config';
       useFactory: (config: ConfigService) => config.get('database')!,
       inject: [ConfigService],
     }),
+    FilesModule,
   ],
 })
 export class AppModule {}
