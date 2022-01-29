@@ -15,19 +15,31 @@ export class FilesController {
   async uploadFile(
     @Req() req: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
-  ): Promise<FileEntity> {
-    const contentLength = req.headers['content-length'];
+  ): Promise<FileEntity | void> {
+    const contentType = req.headers?.['content-type'];
+    if (!contentType) {
+      reply.status(400).send('Header Content-Type is required');
+      return;
+    }
+
+    const contentLength = req.headers?.['content-length'];
+    if (!contentLength) {
+      reply.status(400).send('Header Content-Length is required');
+      return;
+    }
+
     const fileSize = Number(contentLength);
     if (isNaN(fileSize)) {
       reply.status(400).send('Header Content-Length value must be a number');
+      return;
     }
     if (fileSize > this.MAX_FILE_SIZE) {
       reply.status(400).send('Max file size is 2000MiB');
+      return;
     }
 
-    const file = await req.file();
     return this.uploadService.processFile(
-      new UploadFile(file, file.file, fileSize),
+      new UploadFile(contentType, fileSize, req.raw),
     );
   }
 

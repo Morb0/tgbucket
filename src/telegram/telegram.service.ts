@@ -21,8 +21,6 @@ export class TelegramService {
   constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
 
   async uploadFile(stream: Readable, size: number): Promise<InputFileBig> {
-    // NOTE: Possible fail. Because size from Content-Length it represents of all body not only file
-    // Because of that extra bites possible invalid totalParts value
     return new Promise((resolve, reject) => {
       const totalParts = Math.ceil(size / PART_SIZE);
       const fileId = Date.now();
@@ -30,7 +28,7 @@ export class TelegramService {
       let bufferPart = Buffer.alloc(PART_SIZE);
       let bufferOffset = 0;
       let isBufferFilled = false;
-      let uploadedBytes = 0;
+      let processedBytes = 0;
       let remainLastChunk: Buffer | undefined;
       let chunkIdx = 0;
 
@@ -58,11 +56,10 @@ export class TelegramService {
 
         bufferPart.fill(buffToFill, bufferOffset);
         bufferOffset += buffToFill.length;
+        processedBytes += bufferOffset;
+        this.logger.verbose(`Processed bytes: ${processedBytes}`);
 
-        // Bad check?
-        // First chunk always have problems with size for some reason
-        // Origin: https://github.com/nodejs/node/issues/22420#issuecomment-414478920
-        const isLastChunk = chunk.length !== chunk.buffer.byteLength;
+        const isLastChunk = processedBytes === size;
         if (isLastChunk) {
           bufferPart = bufferPart.slice(0, bufferOffset);
           isBufferFilled = true;
@@ -82,10 +79,8 @@ export class TelegramService {
           }
 
           partIdx++;
-          uploadedBytes += bufferOffset;
           isBufferFilled = false;
           bufferOffset = 0;
-          this.logger.verbose(`Uploaded bytes: ${uploadedBytes}`);
           stream.resume();
         }
       });

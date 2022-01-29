@@ -5,9 +5,6 @@ import { BaseEntity } from '../common/base.entity';
 @Entity()
 export class FileEntity extends BaseEntity {
   @Property()
-  filename!: string;
-
-  @Property()
   mimetype!: string;
 
   @Property()
@@ -26,7 +23,6 @@ export class FileEntity extends BaseEntity {
   messageId!: number;
 
   constructor(
-    filename: string,
     mimetype: string,
     size: number,
     dcId: number,
@@ -35,7 +31,6 @@ export class FileEntity extends BaseEntity {
     messageId: number,
   ) {
     super();
-    this.filename = filename;
     this.mimetype = mimetype;
     this.size = size;
     this.dcId = dcId;

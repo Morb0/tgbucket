@@ -15,7 +15,7 @@ export class UploadService {
   ) {}
 
   async processFile(uploadFile: UploadFile): Promise<FileEntity> {
-    this.logger.debug(`Upload "${uploadFile.filename}" file to Telegram`);
+    this.logger.debug('Upload file to Telegram');
     const inputFile = await this.telegramService.uploadFile(
       uploadFile.data,
       uploadFile.size,
@@ -30,7 +30,6 @@ export class UploadService {
     const message = newMessageUpdate.message;
     const document = message.media.document;
     const file = new FileEntity(
-      uploadFile.filename,
       uploadFile.mimetype,
       document.size,
       document.dc_id,
