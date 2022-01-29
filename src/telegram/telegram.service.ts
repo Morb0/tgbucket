@@ -5,10 +5,8 @@ import { Readable } from 'stream';
 import { FileLocation } from './models/file-location.model';
 import { MTPROTO, PART_SIZE } from './telegram.constants';
 import {
-  Document,
   InputFileBig,
   Message,
-  MessageMediaDocument,
   UpdateNewMessage,
   Updates,
   UploadFile,
@@ -95,18 +93,6 @@ export class TelegramService {
     });
   }
 
-  async uploadFilePart(
-    fileId: number,
-    part: number,
-    bytes: Uint8Array,
-  ): Promise<boolean> {
-    return this.callApi('upload.saveFilePart', {
-      file_id: fileId,
-      file_part: part,
-      bytes,
-    });
-  }
-
   async uploadBigFilePart(
     fileId: number,
     part: number,
@@ -119,28 +105,6 @@ export class TelegramService {
       file_total_parts: totalParts,
       bytes,
     });
-  }
-
-  async uploadDocument(
-    mimetype: string,
-    inputFile: InputFileBig,
-  ): Promise<Document | undefined> {
-    const { document } = await this.callApi<MessageMediaDocument>(
-      'messages.uploadMedia',
-      {
-        peer: {
-          _: 'inputPeerSelf',
-        },
-        media: {
-          _: 'inputMediaUploadedDocument',
-          force_file: true,
-          attributes: [],
-          mime_type: mimetype,
-          file: inputFile,
-        },
-      },
-    );
-    return document;
   }
 
   async downloadFile(
