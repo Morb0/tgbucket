@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { databaseConfig } from './configs/database.config';
 import { mtprotoConfig } from './configs/mtproto.config';
+import { DownloadModule } from './download/download.module';
 import { FilesController } from './files.controller';
 import { FilesModule } from './files/files.module';
 import { TelegramModule } from './telegram/telegram.module';
@@ -22,6 +23,7 @@ import { UploadModule } from './upload/upload.module';
     FilesModule,
     UploadModule,
     TelegramModule,
+    DownloadModule,
   ],
   controllers: [FilesController],
 })

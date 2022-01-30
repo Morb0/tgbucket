@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Readable } from 'stream';
 
 import { FileLocation } from './models/file-location.model';
-import { MTPROTO, PART_SIZE } from './telegram.constants';
+import { MTPROTO } from './telegram.constants';
 import {
   InputFileBig,
   Message,
@@ -15,21 +15,23 @@ import {
 @Injectable()
 export class TelegramService {
   private readonly logger = new Logger(this.constructor.name);
+  private readonly PART_SIZE = 512 * 1024; // 512kb
 
   constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
 
   async uploadFile(stream: Readable, size: number): Promise<InputFileBig> {
     return new Promise((resolve, reject) => {
-      const totalParts = Math.ceil(size / PART_SIZE);
+      const totalParts = Math.ceil(size / this.PART_SIZE);
       const fileId = Date.now();
       let partIdx = 0;
-      let bufferPart = Buffer.alloc(PART_SIZE);
+      let bufferPart = Buffer.alloc(this.PART_SIZE);
       let bufferOffset = 0;
       let isBufferFilled = false;
       let processedBytes = 0;
       let remainLastChunk: Buffer | undefined;
       let chunkIdx = 0;
 
+      this.logger.verbose(`Upload ${totalParts} parts of file`);
       stream.on('data', async (chunk: Buffer) => {
         this.logger.verbose(
           `Processing ${chunkIdx} chunk with ${chunk.byteLength} bytes`,
@@ -54,8 +56,8 @@ export class TelegramService {
 
         bufferPart.fill(buffToFill, bufferOffset);
         bufferOffset += buffToFill.length;
-        processedBytes += bufferOffset;
-        this.logger.verbose(`Processed bytes: ${processedBytes}`);
+        processedBytes += chunk.length;
+        this.logger.verbose(`Processed bytes: ${processedBytes}/${size}`);
 
         const isLastChunk = processedBytes === size;
         if (isLastChunk) {
@@ -110,21 +112,33 @@ export class TelegramService {
   async downloadFile(
     fileLocation: FileLocation,
     fileSize: number,
-  ): Promise<Uint8Array> {
-    const totalParts = Math.ceil(fileSize / PART_SIZE);
-    const fileData = new Uint8Array(fileSize);
+  ): Promise<Readable> {
+    const totalParts = Math.ceil(fileSize / this.PART_SIZE);
+    const stream = new Readable({
+      highWaterMark: this.PART_SIZE,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    stream._read = () => {};
 
-    for (let partIdx = 0; partIdx < totalParts; partIdx++) {
-      const offset = PART_SIZE * partIdx;
-      const filePart = await this.getFileDocument(
-        fileLocation,
-        offset,
-        PART_SIZE,
-      );
-      fileData.set(filePart.bytes, offset);
-    }
+    const asyncProcess = async () => {
+      try {
+        for (let partIdx = 0; partIdx < totalParts; partIdx++) {
+          const offset = this.PART_SIZE * partIdx;
+          const filePart = await this.getFileDocument(
+            fileLocation,
+            offset,
+            this.PART_SIZE,
+          );
+          stream.push(filePart.bytes);
+        }
+        stream.push(null);
+      } catch (e) {
+        stream.destroy(e as Error);
+      }
+    };
+    asyncProcess();
 
-    return fileData;
+    return stream;
   }
 
   async getFileDocument(
