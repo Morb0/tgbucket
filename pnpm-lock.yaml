@@ -20,6 +20,7 @@ specifiers:
   '@types/uuid': ^8.3.4
   '@typescript-eslint/eslint-plugin': ^5.0.0
   '@typescript-eslint/parser': ^5.0.0
+  block-stream: ^0.0.9
   eslint: ^8.0.1
   eslint-config-prettier: ^8.3.0
   eslint-plugin-prettier: ^4.0.0
@@ -52,6 +53,7 @@ dependencies:
   '@nestjs/config': 1.1.6_0f75cad7c3bc55c714d492fe95499bdf
   '@nestjs/core': 8.2.6_0f75cad7c3bc55c714d492fe95499bdf
   '@nestjs/platform-fastify': 8.2.6_732a54a2558f64827b8cc4f9baac4f1f
+  block-stream: 0.0.9
   eslint-plugin-simple-import-sort: 7.0.0_eslint@8.7.0
   eslint-plugin-unused-imports: 2.0.0_47dcbfddf9aa6162a24c560c93f1da35
   fastify: 3.27.0
@@ -2148,6 +2150,13 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.0
     dev: true
+
+  /block-stream/0.0.9:
+    resolution: {integrity: sha1-E+v+d4oDIFz+A3UUgeu0szAMEmo=}
+    engines: {node: 0.4 || >=0.5.8}
+    dependencies:
+      inherits: 2.0.4
+    dev: false
 
   /bluebird/2.11.0:
     resolution: {integrity: sha1-U0uQM8AiyVecVro7Plpcqvu2UOE=}

@@ -1,5 +1,6 @@
 import { MTProto, MTProtoError } from '@mtproto/core';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import * as BlockStream from 'block-stream';
 import { Readable } from 'stream';
 
 import { FileLocation } from './models/file-location.model';
@@ -23,75 +24,36 @@ export class TelegramService {
     return new Promise((resolve, reject) => {
       const totalParts = Math.ceil(size / this.PART_SIZE);
       const fileId = Date.now();
+      const blockStream = new BlockStream(this.PART_SIZE);
+
       let partIdx = 0;
-      let bufferPart = Buffer.alloc(this.PART_SIZE);
-      let bufferOffset = 0;
-      let isBufferFilled = false;
-      let processedBytes = 0;
-      let remainLastChunk: Buffer | undefined;
-      let chunkIdx = 0;
 
       this.logger.verbose(`Upload ${totalParts} parts of file`);
-      stream.on('data', async (chunk: Buffer) => {
-        this.logger.verbose(
-          `Processing ${chunkIdx} chunk with ${chunk.byteLength} bytes`,
+      blockStream.on('data', async (chunk: Buffer) => {
+        blockStream.pause();
+        const isUploaded = await this.uploadBigFilePart(
+          fileId,
+          partIdx,
+          totalParts,
+          chunk,
         );
-        chunkIdx++;
-
-        if (remainLastChunk) {
-          bufferPart.fill(remainLastChunk, bufferOffset);
-          bufferOffset += remainLastChunk.length;
-          remainLastChunk = undefined;
+        if (!isUploaded) {
+          return reject(new Error(`Failed to upload ${partIdx} file part`));
         }
 
-        let buffToFill = chunk;
-        const isBufferOverflowing =
-          bufferOffset + chunk.byteLength > bufferPart.byteLength;
-        if (isBufferOverflowing) {
-          const remainSize = bufferPart.byteLength - bufferOffset;
-          buffToFill = chunk.slice(0, remainSize);
-          remainLastChunk = chunk.slice(remainSize);
-          isBufferFilled = true;
-        }
-
-        bufferPart.fill(buffToFill, bufferOffset);
-        bufferOffset += buffToFill.length;
-        processedBytes += chunk.length;
-        this.logger.verbose(`Processed bytes: ${processedBytes}/${size}`);
-
-        const isLastChunk = processedBytes === size;
-        if (isLastChunk) {
-          bufferPart = bufferPart.slice(0, bufferOffset);
-          isBufferFilled = true;
-        }
-
-        if (isBufferFilled) {
-          stream.pause();
-          this.logger.verbose(`Buffer for ${partIdx} part filled`);
-          const isUploaded = await this.uploadBigFilePart(
-            fileId,
-            partIdx,
-            totalParts,
-            bufferPart,
-          );
-          if (!isUploaded) {
-            return reject(new Error(`Failed to upload ${partIdx} file part`));
-          }
-
-          partIdx++;
-          isBufferFilled = false;
-          bufferOffset = 0;
-          stream.resume();
-        }
+        partIdx++;
+        blockStream.resume();
       });
 
-      stream.on('end', () => {
+      blockStream.on('end', () => {
         resolve({
           _: 'inputFileBig',
           id: fileId,
           parts: totalParts,
         });
       });
+
+      stream.pipe(blockStream);
     });
   }
 
