@@ -1,4 +1,4 @@
-import { BigIntType, Entity, Property } from '@mikro-orm/core';
+import { Entity, Property } from '@mikro-orm/core';
 
 import { BaseEntity } from '../common/base.entity';
 
@@ -13,14 +13,17 @@ export class FileEntity extends BaseEntity {
   @Property()
   dcId!: number;
 
-  @Property({ type: BigIntType })
+  @Property()
   fileId!: string;
 
-  @Property({ type: BigIntType })
+  @Property()
   fileAccessHash!: string;
 
   @Property()
   messageId!: number;
+
+  @Property({ nullable: true })
+  filename?: string;
 
   constructor(
     mimetype: string,
@@ -29,6 +32,7 @@ export class FileEntity extends BaseEntity {
     fileId: string,
     fileAccessHash: string,
     messageId: number,
+    filename?: string,
   ) {
     super();
     this.mimetype = mimetype;
@@ -37,5 +41,6 @@ export class FileEntity extends BaseEntity {
     this.fileId = fileId;
     this.fileAccessHash = fileAccessHash;
     this.messageId = messageId;
+    this.filename = filename;
   }
 }
