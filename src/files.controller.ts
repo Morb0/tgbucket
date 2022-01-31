@@ -7,7 +7,7 @@ import {
   Res,
   StreamableFile,
 } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { Request, Response } from 'express';
 import * as path from 'path';
 
 import { DownloadService } from './download/download.service';
@@ -26,18 +26,18 @@ export class FilesController {
 
   @Post()
   async uploadFile(
-    @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<FileEntity | void> {
     const contentType = req.headers?.['content-type'];
     if (!contentType) {
-      reply.status(400).send('Header Content-Type is required');
+      res.status(400).send('Header Content-Type is required');
       return;
     }
 
     const contentLength = req.headers?.['content-length'];
     if (!contentLength) {
-      reply.status(400).send('Header Content-Length is required');
+      res.status(400).send('Header Content-Length is required');
       return;
     }
 
@@ -49,31 +49,29 @@ export class FilesController {
 
     const fileSize = Number(contentLength);
     if (isNaN(fileSize)) {
-      reply.status(400).send('Header Content-Length value must be a number');
+      res.status(400).send('Header Content-Length value must be a number');
       return;
     }
     if (fileSize > this.MAX_FILE_SIZE) {
-      reply.status(400).send('Max file size is 2000MiB');
+      res.status(400).send('Max file size is 2000MiB');
       return;
     }
 
     return this.uploadService.processFile(
-      new UploadFile(contentType, fileSize, req.raw, filename),
+      new UploadFile(contentType, fileSize, req, filename),
     );
   }
 
   @Get(':id')
   async downloadFile(
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) res: Response,
     @Param('id') fileId: string,
   ): Promise<StreamableFile | undefined> {
     const downloadFile = await this.downloadService.processFile(fileId);
     const filename = downloadFile.filename ?? Date.now().toString();
 
-    reply.headers({
-      'Content-Type': downloadFile.mimetype,
-      'Content-Disposition': `attachment; filename="${filename}"`,
-    });
+    res.setHeader('Content-Type', downloadFile.mimetype);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return new StreamableFile(downloadFile.data);
   }
 }

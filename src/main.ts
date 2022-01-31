@@ -1,25 +1,11 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import { FastifyInstance } from 'fastify';
+import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({
-      logger: process.env.NODE_ENV !== 'production',
-    }),
-  );
-  const adapterHost = app.get(HttpAdapterHost);
-  const httpAdapter = adapterHost.httpAdapter;
-  const instance = httpAdapter.getInstance<FastifyInstance>();
-  instance.addContentTypeParser('*', (request, payload, done) => {
-    done(null, payload);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
   });
-  await app.listen(3000, '0.0.0.0');
+  await app.listen(3000);
 }
 bootstrap();
