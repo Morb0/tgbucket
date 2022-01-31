@@ -38,6 +38,7 @@ export class UploadService {
       message.id,
     );
     await this.filesService.create(file);
+    this.logger.debug('File successfully uploaded');
     return file;
   }
 }
