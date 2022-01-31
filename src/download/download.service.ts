@@ -24,7 +24,6 @@ export class DownloadService {
     );
     const fileStream = this.telegramService.downloadFile(
       new FileLocation(file.fileId, file.fileAccessHash, fileReference),
-      file.size,
     );
     const filename = file.filename ?? this.generateFilename(file.mimetype);
     return new DownloadFile(fileStream, file.mimetype, filename);

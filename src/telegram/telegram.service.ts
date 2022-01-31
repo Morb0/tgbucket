@@ -65,36 +65,22 @@ export class TelegramService {
     });
   }
 
-  async downloadFile(
-    fileLocation: FileLocation,
-    fileSize: number,
-    chunkSize = 1024 * 1024, // 1mb
-  ): Promise<Readable> {
-    const totalParts = Math.ceil(fileSize / chunkSize);
+  downloadFile(fileLocation: FileLocation): Readable {
+    const partSize = 512 * 1024; // 512kb
+    let offset = 0;
     const stream = new Readable({
-      highWaterMark: chunkSize,
+      read: () => {
+        this.getFileDocument(fileLocation, offset, partSize)
+          .then(({ bytes }) => {
+            stream.push(bytes);
+            offset += partSize;
+            if (bytes.length < partSize) {
+              stream.push(null);
+            }
+          })
+          .catch((e) => stream.destroy(e));
+      },
     });
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    stream._read = () => {};
-
-    const asyncProcess = async () => {
-      try {
-        for (let partIdx = 0; partIdx < totalParts; partIdx++) {
-          const offset = chunkSize * partIdx;
-          const filePart = await this.getFileDocument(
-            fileLocation,
-            offset,
-            chunkSize,
-          );
-          stream.push(filePart.bytes);
-        }
-        stream.push(null);
-      } catch (e) {
-        stream.destroy(e as Error);
-      }
-    };
-    asyncProcess();
-
     return stream;
   }
 
