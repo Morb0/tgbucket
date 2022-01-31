@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as mime from 'mime';
 
 import { FilesService } from '../files/files.service';
@@ -8,12 +8,15 @@ import { DownloadFile } from './models/download-file.model';
 
 @Injectable()
 export class DownloadService {
+  private readonly logger = new Logger(this.constructor.name);
+
   constructor(
     private readonly filesService: FilesService,
     private readonly telegramService: TelegramService,
   ) {}
 
   async processFile(fileId: string): Promise<DownloadFile> {
+    this.logger.log(`Downloading file "${fileId}"`);
     const file = await this.filesService.findFile(fileId);
     if (!file) {
       throw new Error(`File "${fileId}" not exist`);
