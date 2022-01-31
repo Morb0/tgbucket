@@ -1,5 +1,4 @@
 - File bigger than 2Gb fragment and store in Telegram as multiple blob documents (without mimetype)
 - Add route to sending file as message by username (not work with fragmented files)
-- Refactor download async readable stream. Now if error happen it crash server
-- Add header to saving filename when uploading (X-Content-Filename)
-- Add header to set chunk size when downloading? (X-Chunk-Size)
++ Refactor download async readable stream. Now if error happen it crash server
++ Add header to saving filename when uploading (X-Content-Filename)
