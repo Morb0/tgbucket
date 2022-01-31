@@ -8,6 +8,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import * as path from 'path';
 
 import { DownloadService } from './download/download.service';
 import { FileEntity } from './files/file.entity';
@@ -40,6 +41,12 @@ export class FilesController {
       return;
     }
 
+    let filename = req.headers?.['x-filename'];
+    filename = Array.isArray(filename) ? filename[0] : filename;
+    if (filename) {
+      filename = path.basename(filename);
+    }
+
     const fileSize = Number(contentLength);
     if (isNaN(fileSize)) {
       reply.status(400).send('Header Content-Length value must be a number');
@@ -51,7 +58,7 @@ export class FilesController {
     }
 
     return this.uploadService.processFile(
-      new UploadFile(contentType, fileSize, req.raw),
+      new UploadFile(contentType, fileSize, req.raw, filename),
     );
   }
 
