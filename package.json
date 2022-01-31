@@ -1,7 +1,7 @@
 {
   "name": "tgbucket",
   "version": "0.0.1",
-  "description": "Unlimited Telegram file storage with API",
+  "description": "Simple API for unlimited Telegram storage",
   "author": "Morb0",
   "private": true,
   "license": "MIT",
