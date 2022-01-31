@@ -17,13 +17,12 @@ import {
 @Injectable()
 export class TelegramService {
   private readonly logger = new Logger(this.constructor.name);
-  private readonly UPLOAD_CHUNK_SIZE = 512 * 1024; // 512kb
-  private readonly DOWNLOAD_CHUNK_SIZE = 1024 * 1024; // 1MB
 
   constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
 
   async uploadFile(fileStream: Readable, size: number): Promise<InputFileBig> {
-    const totalParts = Math.ceil(size / this.UPLOAD_CHUNK_SIZE);
+    const partSize = 512 * 1024; // 512kb
+    const totalParts = Math.ceil(size / partSize);
     const fileId = Date.now();
     let partIdx = 0;
     const uploadTelegramStream = new Transform({
@@ -44,7 +43,7 @@ export class TelegramService {
       },
     });
 
-    const blockStream = new BlockStream(this.UPLOAD_CHUNK_SIZE);
+    const blockStream = new BlockStream(partSize);
     return pipeline(fileStream, blockStream, uploadTelegramStream).then(() => ({
       _: 'inputFileBig',
       id: fileId,
@@ -69,10 +68,11 @@ export class TelegramService {
   async downloadFile(
     fileLocation: FileLocation,
     fileSize: number,
+    chunkSize = 1024 * 1024, // 1mb
   ): Promise<Readable> {
-    const totalParts = Math.ceil(fileSize / this.UPLOAD_CHUNK_SIZE);
+    const totalParts = Math.ceil(fileSize / chunkSize);
     const stream = new Readable({
-      highWaterMark: this.DOWNLOAD_CHUNK_SIZE,
+      highWaterMark: chunkSize,
     });
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     stream._read = () => {};
@@ -80,11 +80,11 @@ export class TelegramService {
     const asyncProcess = async () => {
       try {
         for (let partIdx = 0; partIdx < totalParts; partIdx++) {
-          const offset = this.UPLOAD_CHUNK_SIZE * partIdx;
+          const offset = chunkSize * partIdx;
           const filePart = await this.getFileDocument(
             fileLocation,
             offset,
-            this.UPLOAD_CHUNK_SIZE,
+            chunkSize,
           );
           stream.push(filePart.bytes);
         }
