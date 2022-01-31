@@ -4,6 +4,6 @@ export class DownloadFile {
   constructor(
     public data: Readable,
     public mimetype: string,
-    public filename?: string,
+    public filename: string,
   ) {}
 }

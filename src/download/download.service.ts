@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as mime from 'mime';
 
 import { FilesService } from '../files/files.service';
 import { FileLocation } from '../telegram/models/file-location.model';
@@ -21,10 +22,17 @@ export class DownloadService {
     const fileReference = await this.telegramService.getMessageFileReference(
       file.messageId,
     );
-    const fileData = await this.telegramService.downloadFile(
+    const fileStream = this.telegramService.downloadFile(
       new FileLocation(file.fileId, file.fileAccessHash, fileReference),
       file.size,
     );
-    return new DownloadFile(fileData, file.mimetype, file.filename);
+    const filename = file.filename ?? this.generateFilename(file.mimetype);
+    return new DownloadFile(fileStream, file.mimetype, filename);
+  }
+
+  private generateFilename(mimetype: string): string {
+    const name = Date.now().toString();
+    const extension = mime.getExtension(mimetype);
+    return `${name}${extension ? `.${extension}` : ''}`;
   }
 }

@@ -67,11 +67,10 @@ export class FilesController {
     @Res({ passthrough: true }) res: Response,
     @Param('id') fileId: string,
   ): Promise<StreamableFile | undefined> {
-    const downloadFile = await this.downloadService.processFile(fileId);
-    const filename = downloadFile.filename ?? Date.now().toString();
-
-    res.setHeader('Content-Type', downloadFile.mimetype);
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    return new StreamableFile(downloadFile.data);
+    const file = await this.downloadService.processFile(fileId);
+    return new StreamableFile(file.data, {
+      type: file.mimetype,
+      disposition: `attachment; filename="${file.filename}"`,
+    });
   }
 }
