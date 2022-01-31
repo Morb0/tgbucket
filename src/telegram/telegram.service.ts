@@ -1,7 +1,8 @@
 import { MTProto, MTProtoError } from '@mtproto/core';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as BlockStream from 'block-stream2';
-import { Readable } from 'stream';
+import { Readable, Transform, TransformCallback } from 'stream';
+import { pipeline } from 'stream/promises';
 
 import { FileLocation } from './models/file-location.model';
 import { MTPROTO } from './telegram.constants';
@@ -21,41 +22,34 @@ export class TelegramService {
 
   constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
 
-  async uploadFile(stream: Readable, size: number): Promise<InputFileBig> {
-    return new Promise((resolve, reject) => {
-      const totalParts = Math.ceil(size / this.UPLOAD_CHUNK_SIZE);
-      const fileId = Date.now();
-      const blockStream = new BlockStream(this.UPLOAD_CHUNK_SIZE);
-
-      let partIdx = 0;
-
-      this.logger.verbose(`Upload ${totalParts} parts of file`);
-      blockStream.on('data', async (chunk: Buffer) => {
-        blockStream.pause();
-        const isUploaded = await this.uploadBigFilePart(
-          fileId,
-          partIdx,
-          totalParts,
-          chunk,
-        );
-        if (!isUploaded) {
-          return reject(new Error(`Failed to upload ${partIdx} file part`));
-        }
-
-        partIdx++;
-        blockStream.resume();
-      });
-
-      blockStream.on('end', () => {
-        resolve({
-          _: 'inputFileBig',
-          id: fileId,
-          parts: totalParts,
-        });
-      });
-
-      stream.pipe(blockStream);
+  async uploadFile(fileStream: Readable, size: number): Promise<InputFileBig> {
+    const totalParts = Math.ceil(size / this.UPLOAD_CHUNK_SIZE);
+    const fileId = Date.now();
+    let partIdx = 0;
+    const uploadTelegramStream = new Transform({
+      transform: (
+        chunk: Buffer,
+        encoding: BufferEncoding,
+        callback: TransformCallback,
+      ) => {
+        this.uploadBigFilePart(fileId, partIdx, totalParts, chunk)
+          .then((isUploaded) => {
+            if (!isUploaded) {
+              callback(new Error(`Failed to upload ${partIdx} file part`));
+            }
+            partIdx++;
+            callback();
+          })
+          .catch((e) => callback(e));
+      },
     });
+
+    const blockStream = new BlockStream(this.UPLOAD_CHUNK_SIZE);
+    return pipeline(fileStream, blockStream, uploadTelegramStream).then(() => ({
+      _: 'inputFileBig',
+      id: fileId,
+      parts: totalParts,
+    }));
   }
 
   async uploadBigFilePart(
