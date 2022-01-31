@@ -36,6 +36,7 @@ export class UploadService {
       document.id,
       document.access_hash,
       message.id,
+      file.filename,
     );
     await this.filesService.create(fileEntity);
     this.logger.log(`File "${fileEntity.id}" successfully uploaded`);
