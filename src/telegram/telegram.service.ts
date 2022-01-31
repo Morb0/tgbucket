@@ -16,15 +16,16 @@ import {
 @Injectable()
 export class TelegramService {
   private readonly logger = new Logger(this.constructor.name);
-  private readonly PART_SIZE = 512 * 1024; // 512kb
+  private readonly UPLOAD_CHUNK_SIZE = 512 * 1024; // 512kb
+  private readonly DOWNLOAD_CHUNK_SIZE = 1024 * 1024; // 1MB
 
   constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
 
   async uploadFile(stream: Readable, size: number): Promise<InputFileBig> {
     return new Promise((resolve, reject) => {
-      const totalParts = Math.ceil(size / this.PART_SIZE);
+      const totalParts = Math.ceil(size / this.UPLOAD_CHUNK_SIZE);
       const fileId = Date.now();
-      const blockStream = new BlockStream(this.PART_SIZE);
+      const blockStream = new BlockStream(this.UPLOAD_CHUNK_SIZE);
 
       let partIdx = 0;
 
@@ -75,9 +76,9 @@ export class TelegramService {
     fileLocation: FileLocation,
     fileSize: number,
   ): Promise<Readable> {
-    const totalParts = Math.ceil(fileSize / this.PART_SIZE);
+    const totalParts = Math.ceil(fileSize / this.UPLOAD_CHUNK_SIZE);
     const stream = new Readable({
-      highWaterMark: this.PART_SIZE,
+      highWaterMark: this.DOWNLOAD_CHUNK_SIZE,
     });
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     stream._read = () => {};
@@ -85,11 +86,11 @@ export class TelegramService {
     const asyncProcess = async () => {
       try {
         for (let partIdx = 0; partIdx < totalParts; partIdx++) {
-          const offset = this.PART_SIZE * partIdx;
+          const offset = this.UPLOAD_CHUNK_SIZE * partIdx;
           const filePart = await this.getFileDocument(
             fileLocation,
             offset,
-            this.PART_SIZE,
+            this.UPLOAD_CHUNK_SIZE,
           );
           stream.push(filePart.bytes);
         }
