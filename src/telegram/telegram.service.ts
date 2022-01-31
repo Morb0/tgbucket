@@ -1,6 +1,6 @@
 import { MTProto, MTProtoError } from '@mtproto/core';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import * as BlockStream from 'block-stream';
+import * as BlockStream from 'block-stream2';
 import { Readable } from 'stream';
 
 import { FileLocation } from './models/file-location.model';
