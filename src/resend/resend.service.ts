@@ -15,20 +15,20 @@ export class ResendService {
   async resendFile(fileId: string, username: string): Promise<void> {
     this.logger.log(`Resend file "${fileId}" to ${username}`);
 
-    this.logger.debug('Get file info from db...');
+    this.logger.debug('Get file info from db');
     const file = await this.filesService.findFileOrThrow(fileId);
 
-    this.logger.debug('Resolve user by username...');
+    this.logger.debug('Resolve user by username');
     const user = await this.telegramService.resolveUserIdByUsernameOrThrow(
       username,
     );
 
-    this.logger.debug('Get file reference...');
+    this.logger.debug('Get file reference');
     const fileReference = await this.telegramService.getMessageFileReference(
       file.messageId,
     );
 
-    this.logger.debug('Send file to user...');
+    this.logger.debug('Send file to user');
     await this.telegramService.sendDocumentToUser(
       user.id,
       user.access_hash,
