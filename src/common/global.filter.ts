@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   HttpException,
   InternalServerErrorException,
@@ -21,6 +22,9 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
     }
 
     let httpException: HttpException = new InternalServerErrorException();
+    if (exception instanceof BadRequestException) {
+      httpException = exception;
+    }
     if (exception instanceof FileNotExistException) {
       httpException = new NotFoundException(exception.message);
     }
