@@ -20,8 +20,8 @@ import { ResendService } from './resend/resend.service';
 import { UploadFile } from './upload/models/upload-file.model';
 import { UploadService } from './upload/upload.service';
 
-@Controller('files')
-export class FilesController {
+@Controller()
+export class AppController {
   private readonly MAX_FILE_SIZE = 2097152000; // 2000MiB
 
   constructor(
