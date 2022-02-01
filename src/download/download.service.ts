@@ -17,14 +17,23 @@ export class DownloadService {
 
   async processFile(fileId: string): Promise<DownloadFile> {
     this.logger.log(`Downloading file "${fileId}"`);
+
+    this.logger.debug('Get file info from db...');
     const file = await this.filesService.findFileOrThrow(fileId);
+
+    this.logger.debug('Get file reference...');
     const fileReference = await this.telegramService.getMessageFileReference(
       file.messageId,
     );
+
+    this.logger.debug('Get file stream...');
     const fileStream = this.telegramService.downloadFile(
       new FileLocation(file.fileId, file.fileAccessHash, fileReference),
     );
+
+    this.logger.debug('Resolve filename...');
     const filename = file.filename ?? this.generateFilename(file.mimetype);
+
     return new DownloadFile(fileStream, file.mimetype, filename);
   }
 
