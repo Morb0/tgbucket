@@ -53,3 +53,16 @@ export interface Message {
   media: MessageMediaDocument;
   // More...
 }
+
+export interface ResolvedPeer {
+  _: 'contacts.resolvedPeer';
+  peer?: unknown;
+  chats?: unknown[];
+  users?: User[];
+}
+
+export interface User {
+  _: 'user';
+  id: string;
+  access_hash: string;
+}

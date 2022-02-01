@@ -22,9 +22,8 @@ export class UploadService {
     );
 
     this.logger.debug('Send media message to Telegram');
-    const newMessageUpdate = await this.telegramService.sendMediaToSelf(
-      inputFile,
-    );
+    const newMessageUpdate =
+      await this.telegramService.uploadAndSendDocumentToSelf(inputFile);
 
     this.logger.debug('Save file info to database');
     const message = newMessageUpdate.message;

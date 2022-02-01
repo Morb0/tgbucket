@@ -1,7 +1,11 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Req,
   Res,
@@ -12,6 +16,7 @@ import * as path from 'path';
 
 import { DownloadService } from './download/download.service';
 import { FileEntity } from './files/file.entity';
+import { ResendService } from './resend/resend.service';
 import { UploadFile } from './upload/models/upload-file.model';
 import { UploadService } from './upload/upload.service';
 
@@ -22,6 +27,7 @@ export class FilesController {
   constructor(
     private readonly uploadService: UploadService,
     private readonly downloadService: DownloadService,
+    private readonly resendService: ResendService,
   ) {}
 
   @Post()
@@ -72,5 +78,14 @@ export class FilesController {
       type: file.mimetype,
       disposition: `attachment; filename="${file.filename}"`,
     });
+  }
+
+  @Post(':id/resend')
+  @HttpCode(HttpStatus.OK)
+  async sendFile(
+    @Param('id', ParseUUIDPipe) fileId: string,
+    @Body('username') username: string,
+  ): Promise<void> {
+    return this.resendService.resendFile(fileId, username);
   }
 }

@@ -9,9 +9,11 @@ import { MTPROTO } from './telegram.constants';
 import {
   InputFileBig,
   Message,
+  ResolvedPeer,
   UpdateNewMessage,
   Updates,
   UploadFile,
+  User,
 } from './telegram.types';
 
 @Injectable()
@@ -101,7 +103,37 @@ export class TelegramService {
     });
   }
 
-  async sendMediaToSelf(inputFile: InputFileBig): Promise<UpdateNewMessage> {
+  async sendDocumentToUser(
+    userId: string,
+    userAccessHash: string,
+    fileId: string,
+    fileAccessHash: string,
+    fileReference: Uint8Array,
+    caption?: string,
+  ): Promise<void> {
+    await this.callApi('messages.sendMedia', {
+      peer: {
+        _: 'inputPeerUser',
+        user_id: userId,
+        access_hash: userAccessHash,
+      },
+      random_id: Date.now(),
+      media: {
+        _: 'inputMediaDocument',
+        id: {
+          _: 'inputDocument',
+          id: fileId,
+          access_hash: fileAccessHash,
+          file_reference: fileReference,
+        },
+      },
+      message: caption,
+    });
+  }
+
+  async uploadAndSendDocumentToSelf(
+    inputFile: InputFileBig,
+  ): Promise<UpdateNewMessage> {
     const updates = await this.callApi<Updates>('messages.sendMedia', {
       peer: {
         _: 'inputPeerSelf',
@@ -147,6 +179,16 @@ export class TelegramService {
     }
 
     return messages[0].media.document.file_reference;
+  }
+
+  async resolveUserIdByUsername(username: string): Promise<User | undefined> {
+    const resolvedPeer = await this.callApi<ResolvedPeer>(
+      'contacts.resolveUsername',
+      {
+        username,
+      },
+    );
+    return resolvedPeer?.users?.[0];
   }
 
   private async callApi<T = any>(

@@ -9,6 +9,7 @@ import { FilesController } from './files.controller';
 import { FilesModule } from './files/files.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
+import { ResendModule } from './resend/resend.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UploadModule } from './upload/upload.module';
     UploadModule,
     TelegramModule,
     DownloadModule,
+    ResendModule,
   ],
   controllers: [FilesController],
 })
