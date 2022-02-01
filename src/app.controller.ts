@@ -30,6 +30,11 @@ export class AppController {
     private readonly resendService: ResendService,
   ) {}
 
+  @Get()
+  index(): string {
+    return 'ok';
+  }
+
   @Post()
   async uploadFile(
     @Req() req: Request,
