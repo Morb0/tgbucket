@@ -71,7 +71,7 @@ export class FilesController {
   @Get(':id')
   async downloadFile(
     @Res({ passthrough: true }) res: Response,
-    @Param('id') fileId: string,
+    @Param('id', ParseUUIDPipe) fileId: string,
   ): Promise<StreamableFile | undefined> {
     const file = await this.downloadService.processFile(fileId);
     return new StreamableFile(file.data, {
