@@ -66,3 +66,10 @@ export interface User {
   id: string;
   access_hash: string;
 }
+
+export type DocumentAttribute = DocumentAttributeFilename;
+
+export interface DocumentAttributeFilename {
+  _: 'documentAttributeFilename';
+  file_name: string;
+}

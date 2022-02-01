@@ -7,6 +7,7 @@ import { pipeline } from 'stream/promises';
 import { FileLocation } from './models/file-location.model';
 import { MTPROTO } from './telegram.constants';
 import {
+  DocumentAttribute,
   InputFileBig,
   Message,
   ResolvedPeer,
@@ -117,7 +118,6 @@ export class TelegramService {
         user_id: userId,
         access_hash: userAccessHash,
       },
-      random_id: Date.now(),
       media: {
         _: 'inputMediaDocument',
         id: {
@@ -128,12 +128,22 @@ export class TelegramService {
         },
       },
       message: caption,
+      random_id: Date.now(),
     });
   }
 
   async uploadAndSendDocumentToSelf(
     inputFile: InputFileBig,
+    filename?: string,
   ): Promise<UpdateNewMessage> {
+    const attributes: DocumentAttribute[] = [];
+    if (filename) {
+      attributes.push({
+        _: 'documentAttributeFilename',
+        file_name: filename,
+      });
+    }
+
     const updates = await this.callApi<Updates>('messages.sendMedia', {
       peer: {
         _: 'inputPeerSelf',
@@ -141,7 +151,7 @@ export class TelegramService {
       media: {
         _: 'inputMediaUploadedDocument',
         force_file: true,
-        attributes: [],
+        attributes,
         mime_type: 'application/octet-stream',
         file: inputFile,
       },
