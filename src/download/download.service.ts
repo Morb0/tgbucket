@@ -17,11 +17,7 @@ export class DownloadService {
 
   async processFile(fileId: string): Promise<DownloadFile> {
     this.logger.log(`Downloading file "${fileId}"`);
-    const file = await this.filesService.findFile(fileId);
-    if (!file) {
-      throw new Error(`File "${fileId}" not exist`);
-    }
-
+    const file = await this.filesService.findFileOrThrow(fileId);
     const fileReference = await this.telegramService.getMessageFileReference(
       file.messageId,
     );

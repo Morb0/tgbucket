@@ -4,6 +4,7 @@ import * as BlockStream from 'block-stream2';
 import { Readable, Transform, TransformCallback } from 'stream';
 import { pipeline } from 'stream/promises';
 
+import { UserNotFoundException } from './exceptions/user-not-found.exception';
 import { FileLocation } from './models/file-location.model';
 import { MTPROTO } from './telegram.constants';
 import {
@@ -191,14 +192,18 @@ export class TelegramService {
     return messages[0].media.document.file_reference;
   }
 
-  async resolveUserIdByUsername(username: string): Promise<User | undefined> {
+  async resolveUserIdByUsernameOrThrow(username: string): Promise<User> {
     const resolvedPeer = await this.callApi<ResolvedPeer>(
       'contacts.resolveUsername',
       {
         username,
       },
     );
-    return resolvedPeer?.users?.[0];
+    const user = resolvedPeer?.users?.[0];
+    if (!user) {
+      throw new UserNotFoundException(username);
+    }
+    return user;
   }
 
   private async callApi<T = any>(

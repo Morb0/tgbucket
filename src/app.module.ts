@@ -1,8 +1,10 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 
 import { AppController } from './app.controller';
+import { GlobalExceptionFilter } from './common/global.filter';
 import { databaseConfig } from './configs/database.config';
 import { mtprotoConfig } from './configs/mtproto.config';
 import { DownloadModule } from './download/download.module';
@@ -28,5 +30,11 @@ import { UploadModule } from './upload/upload.module';
     ResendModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

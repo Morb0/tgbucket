@@ -2,6 +2,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 
+import { FileNotExistException } from './exceptions/file-not-exist.exception';
 import { FileEntity } from './file.entity';
 
 @Injectable()
@@ -15,7 +16,11 @@ export class FilesService {
     await this.fileRepository.persistAndFlush(entity);
   }
 
-  async findFile(id: string): Promise<FileEntity | null> {
-    return this.fileRepository.findOne({ id });
+  async findFileOrThrow(id: string): Promise<FileEntity> {
+    const file = await this.fileRepository.findOne({ id });
+    if (!file) {
+      throw new FileNotExistException(id);
+    }
+    return file;
   }
 }
