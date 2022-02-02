@@ -18,7 +18,7 @@ declare module '@mtproto/core' {
 
     call(
       method: string,
-      params: Record<string, any>,
+      params?: Record<string, any>,
       options?: {
         dcId?: number;
         syncAuth?: boolean;
@@ -26,6 +26,8 @@ declare module '@mtproto/core' {
     ): Promise<any>;
 
     setDefaultDc(dcId: number): Promise<string>;
+
+    updateInitConnectionParams(params: Record<string, any>): void;
 
     updates: {
       // eslint-disable-next-line @typescript-eslint/ban-types
