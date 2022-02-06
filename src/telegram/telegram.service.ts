@@ -1,5 +1,6 @@
 import { MTProto, MTProtoError } from '@mtproto/core';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as BlockStream from 'block-stream2';
 import { Readable, Transform, TransformCallback } from 'stream';
 import { pipeline } from 'stream/promises';
@@ -19,10 +20,26 @@ import {
 } from './telegram.types';
 
 @Injectable()
-export class TelegramService {
+export class TelegramService implements OnModuleInit {
   private readonly logger = new Logger(this.constructor.name);
 
-  constructor(@Inject(MTPROTO) private readonly mtproto: MTProto) {}
+  constructor(
+    @Inject(MTPROTO) private readonly mtproto: MTProto,
+    private readonly config: ConfigService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    const token = this.config.get('TELEGRAM_BOT_TOKEN');
+    await this.loginBot(token);
+  }
+
+  async loginBot(token: string): Promise<void> {
+    const res = await this.callApi('auth.importBotAuthorization', {
+      bot_auth_token: token,
+    });
+    const username = res?.user?.username;
+    this.logger.log(`Successfully logged in to Telegram as "${username}"`);
+  }
 
   async uploadFile(fileStream: Readable, size: number): Promise<InputFileBig> {
     const partSize = 512 * 1024; // 512kb
@@ -133,7 +150,8 @@ export class TelegramService {
     });
   }
 
-  async uploadAndSendDocumentToSelf(
+  async uploadAndSendDocumentToChat(
+    chatId: string,
     inputFile: InputFileBig,
     filename?: string,
   ): Promise<UpdateNewMessage> {
@@ -147,7 +165,8 @@ export class TelegramService {
 
     const updates = await this.callApi<Updates>('messages.sendMedia', {
       peer: {
-        _: 'inputPeerSelf',
+        _: 'inputPeerChat',
+        chat_id: chatId,
       },
       media: {
         _: 'inputMediaUploadedDocument',

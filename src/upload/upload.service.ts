@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { FileEntity } from '../files/file.entity';
 import { FilesService } from '../files/files.service';
@@ -12,6 +13,7 @@ export class UploadService {
   constructor(
     private readonly telegramService: TelegramService,
     private readonly filesService: FilesService,
+    private readonly configService: ConfigService,
   ) {}
 
   async processFile(file: UploadFile): Promise<FileEntity> {
@@ -22,8 +24,10 @@ export class UploadService {
     );
 
     this.logger.debug('Send media message to Telegram');
+    const chatId = this.configService.get('TELEGRAM_CHAT_ID');
     const newMessageUpdate =
-      await this.telegramService.uploadAndSendDocumentToSelf(
+      await this.telegramService.uploadAndSendDocumentToChat(
+        chatId,
         inputFile,
         file.filename,
       );
