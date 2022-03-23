@@ -3,6 +3,7 @@ import { MikroOrmModuleOptions } from '@mikro-orm/nestjs/typings';
 import { PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Logger } from '@nestjs/common';
 import { registerAs } from '@nestjs/config';
+import * as path from 'path';
 
 const dbLogger = new Logger('Database');
 export const databaseConfig = registerAs(
@@ -11,6 +12,9 @@ export const databaseConfig = registerAs(
     type: 'postgresql',
     clientUrl: process.env.DATABASE_URL,
     autoLoadEntities: true,
+    migrations: {
+      path: path.resolve(__dirname, '../../migrations'),
+    },
     discovery: {
       warnWhenNoEntities: false,
     },
