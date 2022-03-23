@@ -1,32 +1,21 @@
-FROM node:16 as base
-
+FROM node:16 as build
 WORKDIR /app
-COPY package.json \
-  pnpm-lock.yaml \
-  ./
-RUN npm i -g pnpm
-RUN pnpm i --prod
-
-FROM base AS dev
 COPY nest-cli.json \
   tsconfig.* \
+  package.json \
+  pnpm-lock.yaml \
+  mikro-orm.config.ts \
+  types \
   ./
-# bring in src from context
+COPY ./migrations/ ./migrations/
 COPY ./src/ ./src/
-# get custom types
-COPY ./types/ ./types/
-RUN pnpm i
+RUN npm i -g pnpm
+RUN pnpm install
 RUN pnpm build
 
-# use one of the smallest images possible
 FROM node:16-alpine
-# get package.json from base
-COPY --from=base /app/package.json ./
-# get the dist back
-COPY --from=dev /app/dist/ ./dist/
-# get the node_modules from the intial cache
-COPY --from=base /app/node_modules/ ./node_modules/
-# expose application port
+WORKDIR /app
+COPY --from=build /app/dist/ ./
+COPY --from=build /app/node_modules/ ./node_modules/
 EXPOSE 3000
-# start
-CMD ["node", "dist/main.js"]
+CMD ["node", "src/main.js"]
