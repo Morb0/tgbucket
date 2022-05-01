@@ -1,5 +1,6 @@
+import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 
@@ -37,4 +38,13 @@ import { UploadModule } from './upload/upload.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  private readonly logger = new Logger('Migrator');
+
+  constructor(private readonly orm: MikroORM) {}
+
+  async onModuleInit(): Promise<void> {
+    this.logger.log('Start database migration');
+    await this.orm.getMigrator().up();
+  }
+}

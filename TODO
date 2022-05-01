@@ -4,5 +4,5 @@
 + Add header to saving filename when uploading (X-Content-Filename)
 + Add Dockerfile
 + Add README description
-- Add migration on start
-- Support chat id for resend method
++ Add migration on start
++ Support chats and channels for resend method
