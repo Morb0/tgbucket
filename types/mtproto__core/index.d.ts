@@ -37,7 +37,8 @@ declare module '@mtproto/core' {
     };
   }
 
-  export class MTProtoError extends Error {
+  export interface MTProtoError {
+    _: string;
     error_code: number;
     error_message: string;
   }

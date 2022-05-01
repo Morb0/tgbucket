@@ -7,6 +7,7 @@ import { pipeline } from 'stream/promises';
 
 import { PeerType } from './enums/peer-type.enum';
 import { InvalidPeerIdException } from './exceptions/invalid-peer-id.exception';
+import { MTProtoException } from './exceptions/mtproto.exception';
 import { UserNotFoundException } from './exceptions/user-not-found.exception';
 import { FileLocation } from './models/file-location.model';
 import {
@@ -316,10 +317,10 @@ export class TelegramService implements OnModuleInit {
   ): Promise<T> {
     return this.mtproto
       .call(method, params, options)
-      .catch(async (err: Error | MTProtoError) => {
+      .catch(async (err: MTProtoError) => {
         this.logger.error(
           `Failed to call "${method}" method`,
-          err?.stack ?? JSON.stringify(err),
+          JSON.stringify(err),
         );
 
         if ('error_code' in err) {
@@ -354,7 +355,11 @@ export class TelegramService implements OnModuleInit {
           }
         }
 
-        return Promise.reject(err);
+        const exception = new MTProtoException(
+          err.error_code,
+          err.error_message,
+        );
+        return Promise.reject(exception);
       });
   }
 }
