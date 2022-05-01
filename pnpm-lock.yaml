@@ -44,6 +44,7 @@ specifiers:
   tsconfig-paths: ^3.14.1
   typescript: ^4.6.2
   uuid: ^8.3.2
+  webpack: ^5.72.0
 
 dependencies:
   '@mikro-orm/cli': 5.1.1_baf9a54978b9e14c261778e64b095ec0
@@ -87,10 +88,11 @@ devDependencies:
   source-map-support: 0.5.21
   supertest: 6.2.2
   ts-jest: 27.1.3_60149d457e34ffba7d4e845dde6a1263
-  ts-loader: 9.2.8_typescript@4.6.2
+  ts-loader: 9.2.8_typescript@4.6.2+webpack@5.72.0
   ts-node: 10.7.0_5338de7ff0b33ef224ee85855d74b9f4
   tsconfig-paths: 3.14.1
   typescript: 4.6.2
+  webpack: 5.72.0
 
 packages:
 
@@ -5532,6 +5534,32 @@ packages:
       - acorn
     dev: true
 
+  /terser-webpack-plugin/5.3.0_acorn@8.7.0+webpack@5.72.0:
+    resolution: {integrity: sha512-LPIisi3Ol4chwAaPP8toUJ3L4qCM1G0wao7L3qNv57Drezxj6+VEyySpPw4B1HSO2Eg/hDY/MNF5XihCAoqnsQ==}
+    engines: {node: '>= 10.13.0'}
+    peerDependencies:
+      '@swc/core': '*'
+      esbuild: '*'
+      uglify-js: '*'
+      webpack: ^5.1.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      uglify-js:
+        optional: true
+    dependencies:
+      jest-worker: 27.5.1
+      schema-utils: 3.1.1
+      serialize-javascript: 6.0.0
+      source-map: 0.6.1
+      terser: 5.10.0_acorn@8.7.0
+      webpack: 5.72.0
+    transitivePeerDependencies:
+      - acorn
+    dev: true
+
   /terser/5.10.0_acorn@8.7.0:
     resolution: {integrity: sha512-AMmF99DMfEDiRJfxfY5jj5wNH/bYO09cniSqhfoyxc8sFoYIgkJy86G04UoZU5VjlpnplVu0K6Tx6E9b5+DlHA==}
     engines: {node: '>=10'}
@@ -5660,7 +5688,7 @@ packages:
       yargs-parser: 20.2.9
     dev: true
 
-  /ts-loader/9.2.8_typescript@4.6.2:
+  /ts-loader/9.2.8_typescript@4.6.2+webpack@5.72.0:
     resolution: {integrity: sha512-gxSak7IHUuRtwKf3FIPSW1VpZcqF9+MBrHOvBp9cjHh+525SjtCIJKVGjRKIAfxBwDGDGCFF00rTfzB1quxdSw==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -5672,6 +5700,7 @@ packages:
       micromatch: 4.0.4
       semver: 7.3.5
       typescript: 4.6.2
+      webpack: 5.72.0
     dev: true
 
   /ts-node/10.7.0_5338de7ff0b33ef224ee85855d74b9f4:
@@ -5977,6 +6006,46 @@ packages:
       schema-utils: 3.1.1
       tapable: 2.2.1
       terser-webpack-plugin: 5.3.0_acorn@8.7.0+webpack@5.70.0
+      watchpack: 2.3.1
+      webpack-sources: 3.2.3
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+    dev: true
+
+  /webpack/5.72.0:
+    resolution: {integrity: sha512-qmSmbspI0Qo5ld49htys8GY9XhS9CGqFoHTsOVAnjBdg0Zn79y135R+k4IR4rKK6+eKaabMhJwiVB7xw0SJu5w==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    peerDependencies:
+      webpack-cli: '*'
+    peerDependenciesMeta:
+      webpack-cli:
+        optional: true
+    dependencies:
+      '@types/eslint-scope': 3.7.3
+      '@types/estree': 0.0.51
+      '@webassemblyjs/ast': 1.11.1
+      '@webassemblyjs/wasm-edit': 1.11.1
+      '@webassemblyjs/wasm-parser': 1.11.1
+      acorn: 8.7.0
+      acorn-import-assertions: 1.8.0_acorn@8.7.0
+      browserslist: 4.19.1
+      chrome-trace-event: 1.0.3
+      enhanced-resolve: 5.9.2
+      es-module-lexer: 0.9.3
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.9
+      json-parse-better-errors: 1.0.2
+      loader-runner: 4.2.0
+      mime-types: 2.1.34
+      neo-async: 2.6.2
+      schema-utils: 3.1.1
+      tapable: 2.2.1
+      terser-webpack-plugin: 5.3.0_acorn@8.7.0+webpack@5.72.0
       watchpack: 2.3.1
       webpack-sources: 3.2.3
     transitivePeerDependencies:
