@@ -5,18 +5,27 @@ import * as BlockStream from 'block-stream2';
 import { Readable, Transform, TransformCallback } from 'stream';
 import { pipeline } from 'stream/promises';
 
+import { PeerType } from './enums/peer-type.enum';
+import { InvalidPeerIdException } from './exceptions/invalid-peer-id.exception';
 import { UserNotFoundException } from './exceptions/user-not-found.exception';
 import { FileLocation } from './models/file-location.model';
-import { MTPROTO } from './telegram.constants';
+import {
+  MAX_CHANNEL_ID,
+  MAX_USER_ID,
+  MIN_CHANNEL_ID,
+  MIN_CHAT_ID,
+  MTPROTO,
+} from './telegram.constants';
 import {
   DocumentAttribute,
   InputFileBig,
+  InputPeer,
+  InputPeerUser,
   Message,
   ResolvedPeer,
   UpdateNewMessage,
   Updates,
   UploadFile,
-  User,
 } from './telegram.types';
 
 @Injectable()
@@ -123,19 +132,14 @@ export class TelegramService implements OnModuleInit {
   }
 
   async sendDocumentToUser(
-    userId: string,
-    userAccessHash: string,
+    inputPeer: InputPeer,
     fileId: string,
     fileAccessHash: string,
     fileReference: Uint8Array,
     caption?: string,
   ): Promise<void> {
     await this.callApi('messages.sendMedia', {
-      peer: {
-        _: 'inputPeerUser',
-        user_id: userId,
-        access_hash: userAccessHash,
-      },
+      peer: inputPeer,
       media: {
         _: 'inputMediaDocument',
         id: {
@@ -211,18 +215,98 @@ export class TelegramService implements OnModuleInit {
     return messages[0].media.document.file_reference;
   }
 
-  async resolveUserIdByUsernameOrThrow(username: string): Promise<User> {
+  async resolveInputPeer(peerId: string | number): Promise<InputPeer> {
+    if (typeof peerId === 'number') {
+      const peerType = this.getPeerType(peerId);
+      if (peerType === PeerType.User) {
+        return {
+          _: 'inputPeerUser',
+          user_id: String(peerId),
+          access_hash: '0',
+        };
+      } else if (peerType === PeerType.Chat) {
+        return {
+          _: 'inputPeerChat',
+          chat_id: String(-peerId),
+        };
+      } else {
+        return {
+          _: 'inputPeerChannel',
+          channel_id: String(this.getChannelId(peerId)),
+          access_hash: '0',
+        };
+      }
+    }
+
+    try {
+      return await this.resolvePeerByUsername(peerId);
+    } catch (e) {
+      if (e instanceof UserNotFoundException) {
+        return this.resolvePeerByPhone(peerId);
+      }
+      throw e;
+    }
+  }
+
+  private async resolvePeerByUsername(
+    username: string,
+  ): Promise<InputPeerUser> {
     const resolvedPeer = await this.callApi<ResolvedPeer>(
       'contacts.resolveUsername',
       {
         username,
       },
     );
+
     const user = resolvedPeer?.users?.[0];
-    if (!user) {
+    if (!user || user._ === 'userEmpty') {
       throw new UserNotFoundException(username);
     }
-    return user;
+
+    return {
+      _: 'inputPeerUser',
+      user_id: user.id,
+      access_hash: user.access_hash,
+    };
+  }
+
+  private async resolvePeerByPhone(phone: string): Promise<InputPeerUser> {
+    const resolvedPeer = await this.callApi<ResolvedPeer>(
+      'contacts.resolvePhone',
+      {
+        phone,
+      },
+    );
+
+    const user = resolvedPeer?.users?.[0];
+    if (!user || user._ === 'userEmpty') {
+      throw new UserNotFoundException(phone);
+    }
+
+    return {
+      _: 'inputPeerUser',
+      user_id: user.id,
+      access_hash: user.access_hash,
+    };
+  }
+
+  private getPeerType(peerId: number): PeerType {
+    if (peerId < 0) {
+      if (peerId <= MIN_CHAT_ID) {
+        return PeerType.Chat;
+      }
+      if (peerId >= MIN_CHANNEL_ID || peerId < MAX_CHANNEL_ID) {
+        return PeerType.Chanel;
+      }
+    } else if (peerId > 0 || peerId <= MAX_USER_ID) {
+      return PeerType.User;
+    }
+
+    throw new InvalidPeerIdException(peerId);
+  }
+
+  private getChannelId(peerId: number): number {
+    return MAX_CHANNEL_ID - peerId;
   }
 
   private async callApi<T = any>(

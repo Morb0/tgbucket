@@ -51,19 +51,78 @@ export interface Message {
   _: 'message';
   id: number;
   media: MessageMediaDocument;
-  // More...
+  // ...
 }
 
 export interface ResolvedPeer {
   _: 'contacts.resolvedPeer';
-  peer?: unknown;
-  chats?: unknown[];
-  users?: User[];
+  peer: PeerType;
+  chats: ChatType[];
+  users: UserType[];
 }
+
+export type PeerType = PeerUser | PeerChat | PeerChannel;
+
+export interface PeerUser {
+  _: 'peerUser';
+  user_id: string;
+}
+
+export interface PeerChat {
+  _: 'peerChat';
+  chat_id: string;
+}
+
+export interface PeerChannel {
+  _: 'peerChannel';
+  channel_id: string;
+}
+
+export type ChatType = Chat | Channel;
+
+export interface Chat {
+  _: 'chat';
+  id: string;
+  // ...
+}
+
+export interface Channel {
+  _: 'channel';
+  id: string;
+  access_hash: string;
+  // ...
+}
+
+export type UserType = User | UserEmpty;
 
 export interface User {
   _: 'user';
   id: string;
+  access_hash: string;
+  // ...
+}
+
+export interface UserEmpty {
+  _: 'userEmpty';
+  id: string;
+}
+
+export type InputPeer = InputPeerChat | InputPeerUser | InputPeerChannel;
+
+export interface InputPeerChat {
+  _: 'inputPeerChat';
+  chat_id: string;
+}
+
+export interface InputPeerUser {
+  _: 'inputPeerUser';
+  user_id: string;
+  access_hash: string;
+}
+
+export interface InputPeerChannel {
+  _: 'inputPeerChannel';
+  channel_id: string;
   access_hash: string;
 }
 

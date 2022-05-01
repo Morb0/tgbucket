@@ -12,16 +12,14 @@ export class ResendService {
     private readonly telegramService: TelegramService,
   ) {}
 
-  async resendFile(fileId: string, username: string): Promise<void> {
-    this.logger.log(`Resend file "${fileId}" to ${username}`);
+  async resendFile(fileId: string, peerId: string): Promise<void> {
+    this.logger.log(`Resend file "${fileId}" to ${peerId} peer`);
 
     this.logger.debug('Get file info from db');
     const file = await this.filesService.findFileOrThrow(fileId);
 
-    this.logger.debug('Resolve user by username');
-    const user = await this.telegramService.resolveUserIdByUsernameOrThrow(
-      username,
-    );
+    this.logger.debug('Resolve peer');
+    const inputPeer = await this.telegramService.resolveInputPeer(peerId);
 
     this.logger.debug('Get file reference');
     const fileReference = await this.telegramService.getMessageFileReference(
@@ -30,13 +28,12 @@ export class ResendService {
 
     this.logger.debug('Send file to user');
     await this.telegramService.sendDocumentToUser(
-      user.id,
-      user.access_hash,
+      inputPeer,
       file.fileId,
       file.fileAccessHash,
       fileReference,
     );
 
-    this.logger.log(`Successfully resend "${fileId}" to "${username}" user`);
+    this.logger.log(`Successfully resend "${fileId}" to "${peerId}" user`);
   }
 }
