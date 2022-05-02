@@ -13,7 +13,11 @@ export class ResendService {
     private readonly telegramService: TelegramService,
   ) {}
 
-  async resendFile(fileId: string, peerId: string): Promise<void> {
+  async resendFile(
+    fileId: string,
+    peerId: string,
+    message?: string,
+  ): Promise<void> {
     try {
       this.logger.log(`Resend file "${fileId}" to "${peerId}" peer`);
 
@@ -34,6 +38,7 @@ export class ResendService {
         file.fileId,
         file.fileAccessHash,
         fileReference,
+        message,
       );
 
       this.logger.log(`Successfully resend "${fileId}" to "${peerId}" peer`);

@@ -73,7 +73,7 @@ OR use custom filename if wass passed `X-Filename` header on upload.
 **Request:**\
 Require id of uploaded file in url and JSON body:
 ```json
-{ "username": "myTgUsername" }
+{ "peerId": "myTgUsername", "message": "optional" }
 ```
 
 **Response:**\

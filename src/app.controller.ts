@@ -89,8 +89,9 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   async sendFile(
     @Param('id', ParseUUIDPipe) fileId: string,
-    @Body('username') username: string,
+    @Body('peerId') peerId: string,
+    @Body('message') message?: string,
   ): Promise<void> {
-    return this.resendService.resendFile(fileId, username);
+    return this.resendService.resendFile(fileId, peerId, message);
   }
 }
