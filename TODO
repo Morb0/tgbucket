@@ -6,3 +6,4 @@
 + Add README description
 + Add migration on start
 + Support chats and channels for resend method
+- Test upload & resend all types of media
