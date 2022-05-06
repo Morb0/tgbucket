@@ -29,6 +29,7 @@ export class UploadService {
       await this.telegramService.uploadAndSendDocumentToChat(
         chatId,
         inputFile,
+        file.mimetype,
         file.filename,
       );
 

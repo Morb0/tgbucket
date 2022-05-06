@@ -126,9 +126,30 @@ export interface InputPeerChannel {
   access_hash: string;
 }
 
-export type DocumentAttribute = DocumentAttributeFilename;
+export type DocumentAttribute =
+  | DocumentAttributeFilename
+  | DocumentAttributeVideo
+  | DocumentAttributeAudio;
 
 export interface DocumentAttributeFilename {
   _: 'documentAttributeFilename';
   file_name: string;
+}
+
+export interface DocumentAttributeVideo {
+  _: 'documentAttributeVideo';
+  round_message?: boolean;
+  supports_streaming?: boolean;
+  duration?: number;
+  w?: number;
+  h?: number;
+}
+
+export interface DocumentAttributeAudio {
+  _: 'documentAttributeAudio';
+  voice?: number;
+  duration?: number;
+  title?: string;
+  performer?: string;
+  waveform?: Uint8Array;
 }

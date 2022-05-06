@@ -158,7 +158,9 @@ export class TelegramService implements OnModuleInit {
   async uploadAndSendDocumentToChat(
     chatId: string,
     inputFile: InputFileBig,
+    mimetype = 'application/octet-stream',
     filename?: string,
+    ignoreType = false,
   ): Promise<UpdateNewMessage> {
     const attributes: DocumentAttribute[] = [];
     if (filename) {
@@ -166,6 +168,19 @@ export class TelegramService implements OnModuleInit {
         _: 'documentAttributeFilename',
         file_name: filename,
       });
+    }
+    if (!ignoreType) {
+      if (mimetype === 'video/mp4') {
+        attributes.push({
+          _: 'documentAttributeVideo',
+          supports_streaming: true,
+        });
+      }
+      if (mimetype === 'audio/mpeg') {
+        attributes.push({
+          _: 'documentAttributeAudio',
+        });
+      }
     }
 
     const updates = await this.callApi<Updates>('messages.sendMedia', {
@@ -175,9 +190,8 @@ export class TelegramService implements OnModuleInit {
       },
       media: {
         _: 'inputMediaUploadedDocument',
-        force_file: true,
         attributes,
-        mime_type: 'application/octet-stream',
+        mime_type: mimetype,
         file: inputFile,
       },
       random_id: Date.now(),
@@ -239,14 +253,7 @@ export class TelegramService implements OnModuleInit {
       }
     }
 
-    try {
-      return await this.resolvePeerByUsername(peerId);
-    } catch (e) {
-      if (e instanceof UserNotFoundException) {
-        return this.resolvePeerByPhone(peerId);
-      }
-      throw e;
-    }
+    return this.resolvePeerByUsername(peerId);
   }
 
   private async resolvePeerByUsername(
@@ -262,26 +269,6 @@ export class TelegramService implements OnModuleInit {
     const user = resolvedPeer?.users?.[0];
     if (!user || user._ === 'userEmpty') {
       throw new UserNotFoundException(username);
-    }
-
-    return {
-      _: 'inputPeerUser',
-      user_id: user.id,
-      access_hash: user.access_hash,
-    };
-  }
-
-  private async resolvePeerByPhone(phone: string): Promise<InputPeerUser> {
-    const resolvedPeer = await this.callApi<ResolvedPeer>(
-      'contacts.resolvePhone',
-      {
-        phone,
-      },
-    );
-
-    const user = resolvedPeer?.users?.[0];
-    if (!user || user._ === 'userEmpty') {
-      throw new UserNotFoundException(phone);
     }
 
     return {
@@ -355,11 +342,7 @@ export class TelegramService implements OnModuleInit {
           }
         }
 
-        const exception = new MTProtoException(
-          err.error_code,
-          err.error_message,
-        );
-        return Promise.reject(exception);
+        throw new MTProtoException(err.error_code, err.error_message);
       });
   }
 }
